@@ -28,6 +28,35 @@ function validateInput(validatableInput: Validatable) {
     return isValid
 }
 
+class ProjectList {
+    templateElement: HTMLTemplateElement
+    hostElement: HTMLDivElement
+    element: HTMLElement
+
+    constructor(private type: 'active' | 'finished') {
+        this.templateElement = document.getElementById('project-list')! as HTMLTemplateElement;
+        this.hostElement = document.getElementById('app')! as HTMLDivElement
+
+        const content = document.importNode(this.templateElement.content, true)
+
+        this.element = content.firstElementChild as HTMLFormElement
+        this.element.id = `${this.type}-projects`
+
+        this.attach()
+        this.renderContent()
+    }
+
+    private attach() {
+        this.hostElement.insertAdjacentElement('beforeend', this.element)
+    }
+
+    private renderContent() {
+        const listId = `${this.type}-project-list`
+        this.element.querySelector('ul')!.id = listId
+        this.element.querySelector('h2')!.textContent = `${this.type.toUpperCase()} PROJECTS`
+    }
+}
+
 class ProjectInput {
     templateElement: HTMLTemplateElement
     hostElement: HTMLDivElement
@@ -115,3 +144,5 @@ class ProjectInput {
 
 
 const project = new ProjectInput
+const activeProjList = new ProjectList('active')
+const finishedprojLish = new ProjectList('finished')
