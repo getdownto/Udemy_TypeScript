@@ -9,7 +9,7 @@ interface Validatable {
 
 function validateInput(validatableInput: Validatable) {
     let isValid = true
-    if(validatableInput.required) {
+    if (validatableInput.required) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0
     }
     if (validatableInput.minLength != null && typeof validatableInput.value === 'string') {
@@ -29,8 +29,8 @@ function validateInput(validatableInput: Validatable) {
 }
 
 class ProjectState {
-    private listeners: any[] = []
-    private projects: any[] = []
+    private listeners: Listener[] = []
+    private projects: Project[] = []
     private static instance: ProjectState
 
     private constructor() {
@@ -38,32 +38,44 @@ class ProjectState {
     }
 
     static getInstance() {
-        if(this.instance) {
+        if (this.instance) {
             return this.instance
         }
         this.instance = new ProjectState()
         return this.instance
     }
 
-    addProject(title:string, description: string, numOfPeople: number) {
-        const newProject = {
-            id: Math.random.toString(),
-            title: title,
-            description: description,
-            people: numOfPeople
-        }
+    addProject(title: string, description: string, numOfPeople: number) {
+        const newProject = new Project (Math.random.toString(), title, description, numOfPeople, ProjectStatus.Active)
         this.projects.push(newProject)
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice())
         }
     }
 
-    addListener(listenerFn: Function) {
+    addListener(listenerFn: Listener) {
         this.listeners.push(listenerFn)
     }
 }
 
 const projectState = ProjectState.getInstance()
+
+enum ProjectStatus {
+    Active,
+    Finished
+}
+
+class Project {
+    constructor(
+        public id: string,
+        public title: string,
+        public description: string,
+        public people: number,
+        public status: ProjectStatus
+    ) {}
+}
+
+type Listener = (items: Project[]) => void
 
 class ProjectList {
     templateElement: HTMLTemplateElement
@@ -81,8 +93,14 @@ class ProjectList {
         this.element = content.firstElementChild as HTMLFormElement
         this.element.id = `${this.type}-projects`
 
-        projectState.addListener((projects: any) => {
-            this.assignedProjects = projects
+        projectState.addListener((projects: Project[]) => {
+            const relevantProjects = projects.filter(p => {
+                if(this.type === 'active') {
+                    return p.status === ProjectStatus.Active
+                }
+                return p.status === ProjectStatus.Finished
+            })
+            this.assignedProjects = relevantProjects
             this.renderProjects()
         })
 
@@ -102,6 +120,7 @@ class ProjectList {
 
     private renderProjects() {
         const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLElement
+        listEl.innerHTML = ''
         for (const item of this.assignedProjects) {
             const li = document.createElement('li')
             li.textContent = item.title
@@ -146,15 +165,15 @@ class ProjectInput {
     private submitHandler = (event: Event) => {
         event.preventDefault()
         const userInput = this.gatherUserInput()
-        if(Array.isArray(userInput)) {
+        if (Array.isArray(userInput)) {
             const [title, description, people] = userInput
             projectState.addProject(title, description, people)
             this.clearInput()
-            
+
         }
     }
 
-    private gatherUserInput():[string, string, number] | void {
+    private gatherUserInput(): [string, string, number] | void {
         const enteredTitle = this.titleInputElement.value
         const enteredTDescription = this.descriptionInputElement.value
         const enteredPeople = this.peopleInputElement.value

@@ -31,12 +31,7 @@ class ProjectState {
         return this.instance;
     }
     addProject(title, description, numOfPeople) {
-        const newProject = {
-            id: Math.random.toString(),
-            title: title,
-            description: description,
-            people: numOfPeople
-        };
+        const newProject = new Project(Math.random.toString(), title, description, numOfPeople, ProjectStatus.Active);
         this.projects.push(newProject);
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice());
@@ -47,6 +42,20 @@ class ProjectState {
     }
 }
 const projectState = ProjectState.getInstance();
+var ProjectStatus;
+(function (ProjectStatus) {
+    ProjectStatus[ProjectStatus["Active"] = 0] = "Active";
+    ProjectStatus[ProjectStatus["Finished"] = 1] = "Finished";
+})(ProjectStatus || (ProjectStatus = {}));
+class Project {
+    constructor(id, title, description, people, status) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.people = people;
+        this.status = status;
+    }
+}
 class ProjectList {
     constructor(type) {
         this.type = type;
@@ -57,7 +66,13 @@ class ProjectList {
         this.element = content.firstElementChild;
         this.element.id = `${this.type}-projects`;
         projectState.addListener((projects) => {
-            this.assignedProjects = projects;
+            const relevantProjects = projects.filter(p => {
+                if (this.type === 'active') {
+                    return p.status === ProjectStatus.Active;
+                }
+                return p.status === ProjectStatus.Finished;
+            });
+            this.assignedProjects = relevantProjects;
             this.renderProjects();
         });
         this.attach();
@@ -73,6 +88,7 @@ class ProjectList {
     }
     renderProjects() {
         const listEl = document.getElementById(`${this.type}-projects-list`);
+        listEl.innerHTML = '';
         for (const item of this.assignedProjects) {
             const li = document.createElement('li');
             li.textContent = item.title;
