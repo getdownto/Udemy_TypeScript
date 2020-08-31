@@ -28,19 +28,63 @@ function validateInput(validatableInput: Validatable) {
     return isValid
 }
 
+class ProjectState {
+    private listeners: any[] = []
+    private projects: any[] = []
+    private static instance: ProjectState
+
+    private constructor() {
+
+    }
+
+    static getInstance() {
+        if(this.instance) {
+            return this.instance
+        }
+        this.instance = new ProjectState()
+        return this.instance
+    }
+
+    addProject(title:string, description: string, numOfPeople: number) {
+        const newProject = {
+            id: Math.random.toString(),
+            title: title,
+            description: description,
+            people: numOfPeople
+        }
+        this.projects.push(newProject)
+        for (const listenerFn of this.listeners) {
+            listenerFn(this.projects.slice())
+        }
+    }
+
+    addListener(listenerFn: Function) {
+        this.listeners.push(listenerFn)
+    }
+}
+
+const projectState = ProjectState.getInstance()
+
 class ProjectList {
     templateElement: HTMLTemplateElement
     hostElement: HTMLDivElement
     element: HTMLElement
+    assignedProjects: any[]
 
     constructor(private type: 'active' | 'finished') {
         this.templateElement = document.getElementById('project-list')! as HTMLTemplateElement;
         this.hostElement = document.getElementById('app')! as HTMLDivElement
+        this.assignedProjects = []
 
         const content = document.importNode(this.templateElement.content, true)
 
         this.element = content.firstElementChild as HTMLFormElement
         this.element.id = `${this.type}-projects`
+
+        projectState.addListener((projects: any) => {
+            this.assignedProjects = projects
+            this.renderProjects()
+        })
 
         this.attach()
         this.renderContent()
@@ -51,9 +95,18 @@ class ProjectList {
     }
 
     private renderContent() {
-        const listId = `${this.type}-project-list`
+        const listId = `${this.type}-projects-list`
         this.element.querySelector('ul')!.id = listId
         this.element.querySelector('h2')!.textContent = `${this.type.toUpperCase()} PROJECTS`
+    }
+
+    private renderProjects() {
+        const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLElement
+        for (const item of this.assignedProjects) {
+            const li = document.createElement('li')
+            li.textContent = item.title
+            listEl.appendChild(li)
+        }
     }
 }
 
@@ -95,7 +148,7 @@ class ProjectInput {
         const userInput = this.gatherUserInput()
         if(Array.isArray(userInput)) {
             const [title, description, people] = userInput
-            console.log(title, description, people);
+            projectState.addProject(title, description, people)
             this.clearInput()
             
         }

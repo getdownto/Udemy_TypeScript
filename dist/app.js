@@ -18,14 +18,48 @@ function validateInput(validatableInput) {
     }
     return isValid;
 }
+class ProjectState {
+    constructor() {
+        this.listeners = [];
+        this.projects = [];
+    }
+    static getInstance() {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new ProjectState();
+        return this.instance;
+    }
+    addProject(title, description, numOfPeople) {
+        const newProject = {
+            id: Math.random.toString(),
+            title: title,
+            description: description,
+            people: numOfPeople
+        };
+        this.projects.push(newProject);
+        for (const listenerFn of this.listeners) {
+            listenerFn(this.projects.slice());
+        }
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+}
+const projectState = ProjectState.getInstance();
 class ProjectList {
     constructor(type) {
         this.type = type;
         this.templateElement = document.getElementById('project-list');
         this.hostElement = document.getElementById('app');
+        this.assignedProjects = [];
         const content = document.importNode(this.templateElement.content, true);
         this.element = content.firstElementChild;
         this.element.id = `${this.type}-projects`;
+        projectState.addListener((projects) => {
+            this.assignedProjects = projects;
+            this.renderProjects();
+        });
         this.attach();
         this.renderContent();
     }
@@ -33,9 +67,17 @@ class ProjectList {
         this.hostElement.insertAdjacentElement('beforeend', this.element);
     }
     renderContent() {
-        const listId = `${this.type}-project-list`;
+        const listId = `${this.type}-projects-list`;
         this.element.querySelector('ul').id = listId;
         this.element.querySelector('h2').textContent = `${this.type.toUpperCase()} PROJECTS`;
+    }
+    renderProjects() {
+        const listEl = document.getElementById(`${this.type}-projects-list`);
+        for (const item of this.assignedProjects) {
+            const li = document.createElement('li');
+            li.textContent = item.title;
+            listEl.appendChild(li);
+        }
     }
 }
 class ProjectInput {
@@ -45,7 +87,7 @@ class ProjectInput {
             const userInput = this.gatherUserInput();
             if (Array.isArray(userInput)) {
                 const [title, description, people] = userInput;
-                console.log(title, description, people);
+                projectState.addProject(title, description, people);
                 this.clearInput();
             }
         };
