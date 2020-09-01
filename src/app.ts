@@ -66,8 +66,23 @@ class ProjectState extends State<Project> {
     }
 
     addProject(title: string, description: string, numOfPeople: number) {
-        const newProject = new Project (Math.random.toString(), title, description, numOfPeople, ProjectStatus.Active)
+        const newProject = new Project (Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active)
         this.projects.push(newProject)
+        this.updateListeners()
+    }
+
+    moveProject(projectId: string, newStatus: ProjectStatus) {
+        const project = this.projects.find(p => p.id === projectId)
+        console.log('check id', project);
+        
+
+        if(project && project.status !== newStatus) {
+            project.status = newStatus
+            this.updateListeners()
+        }
+    }
+
+    private updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice())
         }
@@ -147,9 +162,9 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
         this.element.querySelector('p')!.textContent = this.project.description
     }
 
-    dragStarthandler(event: DragEvent) {
+    dragStarthandler = (event: DragEvent) => {
         event.dataTransfer!.setData('text/plain', this.project.id)
-        event.dataTransfer!.effectAllowed = 'move'
+        event.dataTransfer!.effectAllowed = 'move'        
     }
     dragEndHandler(event: DragEvent) {
         console.log('Drag ended');
@@ -176,8 +191,9 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
             list.classList.add('droppable')
         }
     }
-    dropHandler(event: DragEvent) {
+    dropHandler = (event: DragEvent) => {
         const id = event.dataTransfer!.getData('text/plain')
+        projectState.moveProject(id, this.type === 'active' ? ProjectStatus.Active : ProjectStatus.Finished)
     }
     dragLeaveHandler = (event: DragEvent) => {
         const list = this.element.querySelector('ul')!
@@ -205,12 +221,16 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Drag
             this.assignedProjects = relevantProjects
             this.renderProjects()
         })
+        console.log('assigned projects', this.assignedProjects);
+        
     }
 
     private renderProjects() {
         const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLElement
         listEl.innerHTML = ''
         for (const item of this.assignedProjects) {
+            console.log('item', item);
+            
             new ProjectItem(this.element.querySelector('ul')!.id, item)
         }
     }
