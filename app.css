@@ -7,18 +7,27 @@
   }
   
   body {
-    margin: 0;
+    margin: 0 auto;
+    width: 50%;
+    background-color: #e1e8ec;
+  }
+
+  .form-control {
+    width: 80%;
+    margin: auto;
   }
   
   label,
   input,
   textarea {
     display: block;
-    margin: 0.5rem 0;
+    margin: 0.5rem;
+    width: 100%;
   }
   
   label {
     font-weight: bold;
+    color: rgb(85, 85, 85);
   }
   
   input,
@@ -26,7 +35,6 @@
     font: inherit;
     padding: 0.2rem 0.4rem;
     width: 100%;
-    max-width: 30rem;
     border: 1px solid #ccc;
   }
   
@@ -37,12 +45,16 @@
   }
   
   button {
+    display: block;
     font: inherit;
-    background: #ff0062;
-    border: 1px solid #ff0062;
+    background: #f3ba00;
+    border: 1px solid #f3ba00;
     cursor: pointer;
     color: white;
     padding: 0.75rem 1rem;
+    width: 35%;
+    margin: auto;
+    margin-top: 30px;
   }
   
   button:focus {
@@ -51,17 +63,18 @@
   
   button:hover,
   button:active {
-    background: #a80041;
-    border-color: #a80041;
+    background: #ffc812;
+    border-color: #ffc812;
   }
   
   .projects {
     margin: 1rem;
-    border: 1px solid #ff0062;
+    border: 1px solid #01587a;
+    background: #f7f9fa;
   }
   
   .projects header {
-    background: #ff0062;
+    background: #01587a;
     height: 3.5rem;
     display: flex;
     justify-content: center;
@@ -69,16 +82,18 @@
   }
   
   #finished-projects {
-    border-color: #0044ff;
+    border-color: #bebebe;
   }
   
   #finished-projects header {
-    background: #0044ff;
+    background: #bebebe;
   }
   
   .projects h2 {
     margin: 0;
-    color: white;
+    color: rgb(255, 255, 255);
+    font-weight: 600;
+    font-size: 20px;
   }
   
   .projects ul {
@@ -95,12 +110,12 @@
   }
   
   .projects li h2 {
-    color: #ff0062;
+    color: #01587a;
     margin: 0.5rem 0;
   }
   
   #finished-projects li h2 {
-    color: #0044ff;
+    color: #5cb3c1;
   }
   
   .projects li h3 {
@@ -113,17 +128,19 @@
   }
   
   .droppable {
-    background: #ffe3ee;
+    background: #e1e8ec;
   }
   
   #finished-projects .droppable {
-    background: #d6e1ff;
+    background: #e1e8ec;
   }
   
   #user-input {
     margin: 1rem;
     padding: 1rem;
-    border: 1px solid #ff0062;
-    background: #f7f7f7;
+    border: 1px solid #e6e6e6;
+    background: #f7f9fa;
+    margin-bottom: 30px;
   }
+
   
